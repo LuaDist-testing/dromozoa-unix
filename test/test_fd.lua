@@ -28,13 +28,13 @@ do
   local reader, writer = unix.pipe()
   fd = { reader:coe():ndelay_on():get(), writer:get() }
   assert(reader:close())
-  assert(not reader:close())
+  assert(reader:close())
 end
 collectgarbage()
 collectgarbage()
 
 assert(unix.fd.get(0) == 0)
-assert(not unix.fd.close(-1))
+assert(not unix.fd.close(-2))
 
 do
   local reader, writer = unix.pipe(unix.O_CLOEXEC)
@@ -42,4 +42,34 @@ do
   assert(writer:get() == fd[2])
   assert(reader:close():get() == -1)
   assert(writer:close():get() == -1)
+end
+
+do
+  local stdout = unix.fd(1, true)
+  stdout:write("foo\n")
+end
+collectgarbage()
+collectgarbage()
+unix.fd.write(1, "bar\n")
+
+assert(unix.STDIN_FILENO == 0)
+assert(unix.STDOUT_FILENO == 1)
+assert(unix.STDERR_FILENO == 2)
+
+unix.fd.stderr:write("baz\n")
+-- print(json.encode(unix.fd))
+
+do
+  local reader, writer = unix.pipe(unix.bor(unix.O_CLOEXEC, unix.O_NONBLOCK))
+  writer:write("foobarbaz")
+  assert(reader:read(3) == "foo")
+  assert(reader:read(3) == "bar")
+  assert(reader:read(3) == "baz")
+  local result = reader:read(3)
+  assert(result == unix.resource_unavailable_try_again)
+  writer:write("qux")
+  writer:close()
+  assert(reader:read(4) == "qux")
+  assert(reader:read(4) == "")
+  reader:close()
 end

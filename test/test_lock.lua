@@ -17,33 +17,14 @@
 
 local unix = require "dromozoa.unix"
 
-local abstract = 1
-local server = assert(unix.socket(unix.AF_UNIX, unix.SOCK_STREAM))
-local result, message, code = server:bind(unix.sockaddr_un("\0dromozoa-unix/test.sock"))
-if not result then
-  if code == unix.ENOENT then
-    abstract = 0
-    os.remove("test.sock")
-    assert(server:bind(unix.sockaddr_un("test.sock")))
-  else
-    assert(result, message, code)
-  end
-end
-assert(server:listen())
-io.stdout:write(abstract, "\n")
-io.stdout:flush()
-io.stdout:close()
+unix.set_log_level(3)
+unix.set_raise_error(true)
 
-local fd, sa = server:accept(unix.O_CLOEXEC)
-while true do
-  local result, message, code = fd:read(256)
-  if result and #result > 0 then
-    assert(result == "foo\n")
-    -- io.stderr:write(result)
-    assert(fd:write("bar\n") == 4)
-  else
-    break
-  end
-end
-assert(fd:close())
-assert(server:close())
+local fd = unix.open("test.lock", unix.bor(unix.O_CREAT, unix.O_WRONLY), 384)
+print("locking")
+fd:lock_ex()
+print("locked")
+-- unix.nanosleep({ tv_sec = 10, tv_nsec = 0 })
+print("unlocking")
+fd:lock_un()
+print("unlocked")

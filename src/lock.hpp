@@ -15,45 +15,15 @@
 // You should have received a copy of the GNU General Public License
 // along with dromozoa-unix.  If not, see <http://www.gnu.org/licenses/>.
 
+#ifndef DROMOZOA_LOCK_HPP
+#define DROMOZOA_LOCK_HPP
+
 extern "C" {
 #include <lua.h>
-#include <lauxlib.h>
 }
-
-#include <errno.h>
-#include <stddef.h>
-#include <unistd.h>
-
-#include <vector>
-
-#include "dromozoa/bind.hpp"
-
-#include "error.hpp"
-#include "fd.hpp"
-#include "read.hpp"
 
 namespace dromozoa {
-  using bind::function;
-
-  namespace {
-    int impl_read(lua_State* L) {
-      std::vector<char> buffer(luaL_checkinteger(L, 2));
-      ssize_t result = read(get_fd(L, 1), &buffer[0], buffer.size());
-      if (result == -1) {
-        int code = errno;
-        if (code == EAGAIN || code == EWOULDBLOCK) {
-          return push_resource_unavailable_try_again(L);
-        } else {
-          return push_error(L, code);
-        }
-      } else {
-        lua_pushlstring(L, &buffer[0], result);
-        return 1;
-      }
-    }
-  }
-
-  void initialize_read(lua_State* L) {
-    function<impl_read>::set_field(L, "read");
-  }
+  void initialize_lock(lua_State* L);
 }
+
+#endif
