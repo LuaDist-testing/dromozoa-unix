@@ -1,15 +1,15 @@
 -- This file was automatically generated for the LuaDist project.
 
 package = "dromozoa-unix"
-version = "1.47-1"
+version = "1.48-1"
 -- LuaDist source
 source = {
-  tag = "1.47-1",
+  tag = "1.48-1",
   url = "git://github.com/LuaDist-testing/dromozoa-unix.git"
 }
 -- Original source
 -- source = {
---   url = "https://github.com/dromozoa/dromozoa-unix/releases/download/v1.47/dromozoa-unix-1.47.tar.gz";
+--   url = "https://github.com/dromozoa/dromozoa-unix/releases/download/v1.48/dromozoa-unix-1.48.tar.gz";
 -- }
 description = {
   summary = "Lua bindings for UNIX system interface";
